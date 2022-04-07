@@ -165,3 +165,8 @@ display(feats)
 
 # COMMAND ----------
 
+pandas_df = feats.toPandas()
+pandas_df['resultado_processo'].value_counts()
+
+# COMMAND ----------
+
