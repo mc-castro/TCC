@@ -81,7 +81,7 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
             return False
 
     def optimize_hyperparameters(self, pipe, X, y, max_evals=1):
-        '''
+        
         opt_space = {'lgbm__learning_rate': hp.loguniform('lgbm__learning_rate', np.log(0.001), np.log(0.5)),
                         'lgbm__reg_alpha': hp.loguniform('lgbm__reg_alpha', np.log(0.001), np.log(1)),
                         'lgbm__reg_lambda': hp.loguniform('lgbm__reg_lambda', np.log(0.001), np.log(1)),
@@ -91,17 +91,6 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
                         'lgbm__num_leaves': scope.int(hp.quniform('lgbm__num_leaves', 2, 50, 1)),
                         'lgbm__subsample_freq': scope.int(hp.quniform('lgbm__subsample_freq', 1, 10, 1)),
                         'lgbm__n_estimators': scope.int(hp.quniform('lgbm__n_estimators', 100, 5000, 1))}
-        '''
-        
-        opt_space = {'lgbm__learning_rate': 0.013702894030193776,
-                        'lgbm__reg_alpha': 0.03658942006590777,
-                        'lgbm__reg_lambda': 0.4497411418739689,
-                        'lgbm__subsample': 0.26886596249555467,
-                        'lgbm__colsample_bytree': 0.6800575979168136,
-                        'lgbm__min_child_samples': 1,
-                        'lgbm__num_leaves': 8,
-                        'lgbm__subsample_freq': 2,
-                        'lgbm__n_estimators': 803}
 
         def obj(x):
             
