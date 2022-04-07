@@ -25,9 +25,11 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import cross_val_predict, cross_val_score
-from sklearn.metrics import recall_score, precision_score, make_scorer, f1_score
+from sklearn.metrics import recall_score, precision_score, make_scorer, f1_score, classification_report, accuracy_score
+from sklearn.dummy import DummyClassifier
 from imblearn.pipeline import Pipeline
 from imblearn.over_sampling import RandomOverSampler
+from imblearn.under_sampling import RandomUnderSampler
 from hyperopt import fmin, tpe, hp
 from hyperopt.pyll.base import scope
 from hyperopt.pyll.stochastic import sample
@@ -78,8 +80,8 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
         else:
             return False
 
-    def optimize_hyperparameters(self, pipe, X, y, max_evals=100):
-
+    def optimize_hyperparameters(self, pipe, X, y, max_evals=1):
+        '''
         opt_space = {'lgbm__learning_rate': hp.loguniform('lgbm__learning_rate', np.log(0.001), np.log(0.5)),
                         'lgbm__reg_alpha': hp.loguniform('lgbm__reg_alpha', np.log(0.001), np.log(1)),
                         'lgbm__reg_lambda': hp.loguniform('lgbm__reg_lambda', np.log(0.001), np.log(1)),
@@ -89,6 +91,17 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
                         'lgbm__num_leaves': scope.int(hp.quniform('lgbm__num_leaves', 2, 50, 1)),
                         'lgbm__subsample_freq': scope.int(hp.quniform('lgbm__subsample_freq', 1, 10, 1)),
                         'lgbm__n_estimators': scope.int(hp.quniform('lgbm__n_estimators', 100, 5000, 1))}
+        '''
+        
+        opt_space = {'lgbm__learning_rate': 0.013702894030193776,
+                        'lgbm__reg_alpha': 0.03658942006590777,
+                        'lgbm__reg_lambda': 0.4497411418739689,
+                        'lgbm__subsample': 0.26886596249555467,
+                        'lgbm__colsample_bytree': 0.6800575979168136,
+                        'lgbm__min_child_samples': 1,
+                        'lgbm__num_leaves': 8,
+                        'lgbm__subsample_freq': 2,
+                        'lgbm__n_estimators': 803}
 
         def obj(x):
             
@@ -111,6 +124,7 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
         precision1 = precision_score(y, y_pred, pos_label=1)
         f1_0 = f1_score(y, y_pred, pos_label=0)
         f1_1 = f1_score(y, y_pred, pos_label=1)
+        accuracy = accuracy_score(y,y_pred)
         
 
         mlflow.log_metric("recall_class0", recall0)
@@ -119,6 +133,7 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
         mlflow.log_metric("precision_class1", precision1)
         mlflow.log_metric("f1_class0", f1_0)
         mlflow.log_metric("f1_class1", f1_1)
+        mlflow.log_metric("accuracy", accuracy)
         mlflow.log_params(hypers)
         mlflow.sklearn.log_model(model, "lgbm")
 
@@ -298,7 +313,18 @@ prp.predict('context', data.drop(['codigo_processo', 'resultado_processo'], axis
 
 # COMMAND ----------
 
-data.drop(['codigo_processo', 'resultado_processo'], axis=1)
+# Dummy
+print(classification_report(y, DummyClassifier(strategy='stratified').fit(X, y).predict(X)))
+
+# COMMAND ----------
+
+y.value_counts()
+
+# COMMAND ----------
+
+ros = RandomOverSampler(random_state=9)
+X_resampled, y_resampled = ros.fit_resample(X, y)
+y_resampled.value_counts()
 
 # COMMAND ----------
 
