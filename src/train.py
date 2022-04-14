@@ -80,7 +80,7 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
         else:
             return False
 
-    def optimize_hyperparameters(self, pipe, X, y, max_evals=1):
+    def optimize_hyperparameters(self, pipe, X, y, max_evals=100):
         
         opt_space = {'lgbm__learning_rate': hp.loguniform('lgbm__learning_rate', np.log(0.001), np.log(0.5)),
                         'lgbm__reg_alpha': hp.loguniform('lgbm__reg_alpha', np.log(0.001), np.log(1)),
