@@ -77,10 +77,10 @@ class MakePredictionPipeline(object):
 
 
     def write_predictions_to_datalake(self, predicted_data: DataFrame, evidences_data: DataFrame) -> None:
-        #dbutils.fs.rm("dbfs:/FileStore/tables/predictions.csv", True)
+        dbutils.fs.rm("dbfs:/FileStore/tables/predictions.csv", True)
         predicted_data.write.csv("dbfs:/FileStore/tables/predictions.csv", header="true")
         
-        #dbutils.fs.rm("dbfs:/FileStore/tables/evidences.csv", True)
+        dbutils.fs.rm("dbfs:/FileStore/tables/evidences.csv", True)
         evidences_data.write.csv("dbfs:/FileStore/tables/evidences.csv", header="true")
 
         return
@@ -93,22 +93,12 @@ class MakePredictionPipeline(object):
         model_udf = self.load_model(stage = "None")
         # 3. MAKE PREDICTIONS
         df_preds, provas = self.make_predictions(data, model_udf)
-        display (df_preds)
+        display (provas)
+        #display (df_preds)
         # 4. WRITE PREDICTIONS TO DATALAKE
-        #self.write_predictions_to_datalake(df_preds, provas)
+        self.write_predictions_to_datalake(df_preds, provas)
         
         
 if __name__ == "__main__":
     pipeline = MakePredictionPipeline("lgbm_tcc")
     pipeline.run()
-
-# COMMAND ----------
-
-dbutils.fs.rm("dbfs:/FileStore/tables/base_futuro_tcc_csv.csv", True)
-
-# COMMAND ----------
-
-dbutils.fs.rm("dbfs:/FileStore/tables/base_tcc_csv.csv", True)
-
-# COMMAND ----------
-
