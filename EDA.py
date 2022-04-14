@@ -72,25 +72,40 @@ profile.to_file("report.html")
 
 # COMMAND ----------
 
-cg['resultado_processo'].value_counts()
+df['resultado_processo'].value_counts()
 
 # COMMAND ----------
 
 # remove colunas com classes muito dominantes
 def drop_low_variance(col):
-    if cg[col].nunique() == 1:
+    if df[col].nunique() == 1:
         return True
-    elif cg[col].nunique() == 2 and 'INV' in cg[col].unique():
+    elif df[col].nunique() == 2 and 'INV' in df[col].unique():
         return True
-    elif cg[cg[col] != 'INV'][col].value_counts(1).iloc[0] > 0.9:
+    elif df[df[col] != 'INV'][col].value_counts(1).iloc[0] > 0.9:
         return True
-    elif 'SIM' in cg[col].unique():
-        if cg[cg[col] != 'INV'][col].value_counts().iloc[-1] < 5:
+    elif 'SIM' in df[col].unique():
+        if df[df[col] != 'INV'][col].value_counts().iloc[-1] < 5:
             return True
         else:
             return False
     else:
         return False
 
-cols_to_remove = [col for col in cg.columns if drop_low_variance(col)]
-cg.drop(cols_to_remove, axis=1, inplace=True)
+cols_to_remove = [col for col in df.columns if drop_low_variance(col)]
+df.drop(cols_to_remove, axis=1, inplace=True)
+
+# COMMAND ----------
+
+cols_to_remove
+
+# COMMAND ----------
+
+display(df)
+
+# COMMAND ----------
+
+display(df[["prova_1","resultado_processo"]])
+
+# COMMAND ----------
+
