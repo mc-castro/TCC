@@ -82,15 +82,10 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
 
     def optimize_hyperparameters(self, pipe, X, y, max_evals=100):
         
-        opt_space = {'lgbm__learning_rate': hp.loguniform('lgbm__learning_rate', np.log(0.001), np.log(0.5)),
-                        'lgbm__reg_alpha': hp.loguniform('lgbm__reg_alpha', np.log(0.001), np.log(1)),
-                        'lgbm__reg_lambda': hp.loguniform('lgbm__reg_lambda', np.log(0.001), np.log(1)),
-                        'lgbm__subsample': hp.uniform('lgbm__subsample', 0.2, 1),
-                        'lgbm__colsample_bytree': hp.uniform('lgbm__colsample_bytree', 0.2, 1),
-                        'lgbm__min_child_samples': scope.int(hp.quniform('lgbm__min_child_samples', 1, 100, 1)),
-                        'lgbm__num_leaves': scope.int(hp.quniform('lgbm__num_leaves', 2, 50, 1)),
-                        'lgbm__subsample_freq': scope.int(hp.quniform('lgbm__subsample_freq', 1, 10, 1)),
-                        'lgbm__n_estimators': scope.int(hp.quniform('lgbm__n_estimators', 100, 5000, 1))}
+        opt_space = {'rf__n_estimators': scope.int(hp.quniform('rf__n_estimators', 50, 300, 10)),
+                    'rf__num_leaves': scope.int(hp.quniform('num_leaves', 2, 100, 1)),
+                    'rf__subsample': hp.uniform('rf__subsample', 0.3, 0.95),
+                    'rf__colsample_bytree': hp.uniform('rf__colsample_bytree', 0.3, 0.95)}
 
         def obj(x):
             
@@ -124,7 +119,7 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
         mlflow.log_metric("f1_class1", f1_1)
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_params(hypers)
-        mlflow.sklearn.log_model(model, "lgbm")
+        mlflow.sklearn.log_model(model, "rf")
 
         
     def fit(self, df):
@@ -137,23 +132,23 @@ class PriceRangePredictor(mlflow.pyfunc.PythonModel):
         high_card_feats = [col for col in cat_feats if self.is_high_card(col, self.X)]
         cat_feats = [col for col in cat_feats if col not in high_card_feats]
 
-        self.lgbm_pipe = Pipeline(
+        self.rf_pipe = Pipeline(
         [
             ('feat_trans', GBMFeatTransformer(high_card_feats)),
             ('over', RandomOverSampler(random_state=9)),
-            ('lgbm', LGBMClassifier())
+            ('rf', LGBMClassifier(boosting_type='rf', subsample_freq=1, min_child_samples=1))
         ]
         )
 
-        best_hypers = self.optimize_hyperparameters(clone(self.lgbm_pipe), self.X, y)
-        self.model = clone(self.lgbm_pipe).set_params(**best_hypers).fit(self.X, y)
-        y_pred = cross_val_predict(clone(self.lgbm_pipe).set_params(**best_hypers), self.X, y, cv=10)
+        best_hypers = self.optimize_hyperparameters(clone(self.rf_pipe), self.X, y)
+        self.model = clone(self.rf_pipe).set_params(**best_hypers).fit(self.X, y)
+        y_pred = cross_val_predict(clone(self.rf_pipe).set_params(**best_hypers), self.X, y, cv=10)
   
         self.track_results(y, y_pred, self.model, best_hypers)
     
         #ranking de features
         provas = [col for col in self.X.columns if 'prova' in col]
-        explainer = shap.TreeExplainer(self.model["lgbm"])
+        explainer = shap.TreeExplainer(self.model["rf"])
         data_transformation = self.model['feat_trans'].fit_transform(self.X)
 
         shap_values = explainer.shap_values(data_transformation, approximate=False, check_additivity=False)
