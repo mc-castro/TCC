@@ -1,4 +1,4 @@
-# Tema: 'Utilização de Modelos Baseados em Árvores de Decisão para Elaboração de Defesas de Processos Trabalhistas'
+# Tema: `Utilização de Modelos Baseados em Árvores de Decisão para Elaboração de Defesas de Processos Trabalhistas`
 
 # Descrição Resumida do Projeto
 > Quando uma empresa recebe a notificação de um processo trabalhista, o departamento jurídico é acionado para representar o caso. Um dos maiores impasses durante a elaboração de uma defesa processual é entender qual a probabilidade de vitória para decidir o rumo que essa defesa irá seguir: tentar um acordo e encerrar o processo mais rápido e com menos custo (quando as chances de vitória do caso são baixas) ou seguir em frente com a ação visando a vitória, pois embora seja uma opção mais demorada, pode ter um menor custo quando a probabilidade de um resultado favorável for maior. 
