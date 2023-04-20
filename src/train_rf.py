@@ -262,7 +262,6 @@ if __name__ == "__main__":
                 'conda-forge'
             ],
             'dependencies': [
-                'git+https://${SPARKPASSWORD}:x-oauth-basic@github.com/cervejaria-ambev/pyiris.git@v${VERSION_NUMBER}'
                 'python=3.7.0',
                 'cloudpickle==1.6.0',
                 'scikit-learn==0.22.1',
